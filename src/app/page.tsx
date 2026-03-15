@@ -1,6 +1,6 @@
-import { adminDb as db } from "@/utils/firebase/admin"; // We use admin to fetch server-side
+import { adminDb as db } from "@/utils/firebase/admin";
 import SyncButton from "@/components/SyncButton";
-import { ExternalLink, Tag } from "lucide-react";
+import PostGrid from "@/components/PostGrid";
 
 // Types matching the PRD Schema
 type AIPost = {
@@ -107,49 +107,8 @@ export default async function Dashboard() {
         <SyncButton />
       </div>
 
-      {/* Masonry Grid */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
-        {posts.map((post) => (
-          <div key={post.id} className="glass-card p-6 break-inside-avoid relative group flex flex-col h-full">
-            
-            {/* Importance Badge */}
-            <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold shadow-md border-2 border-white">
-               {post.importance_score}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 mb-5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-gray-100 text-xs font-semibold text-gray-700 border border-gray-200">
-                <Tag className="w-3.5 h-3.5 text-black" />
-                {post.category}
-              </span>
-              <span className="text-xs font-medium text-gray-500">
-                Score: {post.importance_score}/10
-              </span>
-            </div>
-
-            <p className="text-gray-800 leading-relaxed mb-8 font-medium text-base">
-              {post.ai_summary}
-            </p>
-
-            <div className="pt-5 border-t border-gray-100 flex items-center justify-between mt-auto">
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Source</span>
-                  <span className="text-sm text-gray-900 font-semibold truncate max-w-[150px]">{post.source_name}</span>
-               </div>
-               
-               <a 
-                 href={post.original_url} 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 className="px-3 py-1.5 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-black transition-colors flex items-center gap-2 text-xs font-semibold border border-gray-200"
-               >
-                 Original
-                 <ExternalLink className="w-3.5 h-3.5" />
-               </a>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Dynamic Grid with Sort & Filter */}
+      <PostGrid initialPosts={posts} />
     </div>
   );
 }

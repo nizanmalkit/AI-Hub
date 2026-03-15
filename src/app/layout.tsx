@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Zap, LayoutGrid, Rss, Settings } from "lucide-react";
+import { Zap, LayoutGrid, Rss } from "lucide-react";
+import SettingsDropdown from "@/components/SettingsDropdown";
 
 // Load Premium Fonts
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -57,9 +58,7 @@ export default function RootLayout({
 
             {/* Right side actions */}
             <div className="flex items-center gap-4">
-              <button className="p-2 justify-center rounded-md hover:bg-gray-100 transition-colors text-gray-500 hover:text-black border border-transparent hover:border-gray-200">
-                <Settings className="w-4 h-4" />
-              </button>
+              <SettingsDropdown />
             </div>
           </div>
         </header>
