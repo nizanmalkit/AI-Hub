@@ -92,13 +92,13 @@ export default async function Dashboard() {
   const posts = await getPosts();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-in fade-in duration-700">
       
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-8">
         <div>
-          <h1 className="text-4xl heading-text mb-2">Curated Insights</h1>
-          <p className="text-muted text-lg max-w-2xl">
+          <h1 className="text-4xl heading-text mb-3">Curated Insights</h1>
+          <p className="text-gray-500 text-lg max-w-2xl font-medium">
             The most important developments in Artificial Intelligence, aggregated and summarized automatically by Gemini.
           </p>
         </div>
@@ -107,44 +107,44 @@ export default async function Dashboard() {
         <SyncButton />
       </div>
 
-      {/* Masonry Grid replacement (CSS Columns) */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+      {/* Masonry Grid */}
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
         {posts.map((post) => (
-          <div key={post.id} className="glass-card p-6 break-inside-avoid relative group">
+          <div key={post.id} className="glass-card p-6 break-inside-avoid relative group flex flex-col h-full">
             
             {/* Importance Badge */}
-            <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-lg shadow-accent/40 border-2 border-primary">
+            <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold shadow-md border-2 border-white">
                {post.importance_score}
             </div>
 
-            <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 text-xs font-medium text-white/80 border border-white/10">
-                <Tag className="w-3 h-3 text-accent" />
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-gray-100 text-xs font-semibold text-gray-700 border border-gray-200">
+                <Tag className="w-3.5 h-3.5 text-black" />
                 {post.category}
               </span>
-              <span className="text-xs text-muted/80">
+              <span className="text-xs font-medium text-gray-500">
                 Score: {post.importance_score}/10
               </span>
             </div>
 
-            <p className="text-white/90 leading-relaxed mb-6 font-medium text-sm md:text-base">
+            <p className="text-gray-800 leading-relaxed mb-8 font-medium text-base">
               {post.ai_summary}
             </p>
 
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between mt-auto">
+            <div className="pt-5 border-t border-gray-100 flex items-center justify-between mt-auto">
                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1">Source</span>
-                  <span className="text-sm text-white/80 truncate max-w-[150px]">{post.source_name}</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Source</span>
+                  <span className="text-sm text-gray-900 font-semibold truncate max-w-[150px]">{post.source_name}</span>
                </div>
                
                <a 
                  href={post.original_url} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors flex items-center gap-2 text-xs font-medium"
+                 className="px-3 py-1.5 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-black transition-colors flex items-center gap-2 text-xs font-semibold border border-gray-200"
                >
                  Original
-                 <ExternalLink className="w-3 h-3" />
+                 <ExternalLink className="w-3.5 h-3.5" />
                </a>
             </div>
           </div>

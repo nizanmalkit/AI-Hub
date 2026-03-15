@@ -19,24 +19,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light">
       <body
         className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col relative overflow-x-hidden`}
         suppressHydrationWarning
       >
-        {/* Aesthetic Background Blobs */}
-        <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-        <div className="fixed bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
-
-        {/* Top Navigation Bar */}
-        <header className="sticky top-0 z-50 glass w-full border-b border-white/5">
+        {/* Top Navigation Bar - Minimalist */}
+        <header className="sticky top-0 z-50 glass w-full border-b border-gray-200 bg-white/90">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-lg shadow-accent/20 group-hover:shadow-accent/40 transition-shadow">
+              <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center transition-transform group-hover:scale-105">
                 <Zap className="w-4 h-4 text-white fill-white" />
               </div>
-              <span className="font-heading font-bold text-xl tracking-tight text-white/90 group-hover:text-white transition-colors">
+              <span className="font-heading font-bold text-xl tracking-tight text-gray-900">
                 AI Hub
               </span>
             </Link>
@@ -45,31 +41,31 @@ export default function RootLayout({
             <nav className="hidden md:flex items-center gap-6">
               <Link
                 href="/"
-                className="flex items-center gap-2 text-sm font-medium text-muted hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
               >
                 <LayoutGrid className="w-4 h-4" />
                 Dashboard
               </Link>
               <Link
                 href="/sources"
-                className="flex items-center gap-2 text-sm font-medium text-muted hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
               >
                 <Rss className="w-4 h-4" />
                 Sources
               </Link>
             </nav>
 
-            {/* Right side actions placeholder */}
+            {/* Right side actions */}
             <div className="flex items-center gap-4">
-              <button className="p-2 rounded-full hover:bg-white/5 transition-colors text-muted hover:text-white">
-                <Settings className="w-5 h-5" />
+              <button className="p-2 justify-center rounded-md hover:bg-gray-100 transition-colors text-gray-500 hover:text-black border border-transparent hover:border-gray-200">
+                <Settings className="w-4 h-4" />
               </button>
             </div>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 relative z-0">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 relative z-0">
           {children}
         </main>
       </body>

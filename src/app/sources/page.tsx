@@ -61,12 +61,12 @@ export default async function SourcesPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700">
       
       {/* Header */}
-      <div>
-        <h1 className="text-4xl heading-text mb-2">Manage Sources</h1>
-        <p className="text-muted text-lg">
+      <div className="border-b border-gray-200 pb-8">
+        <h1 className="text-4xl heading-text mb-3">Manage Sources</h1>
+        <p className="text-gray-500 text-lg max-w-2xl font-medium">
           Configure the RSS feeds, YouTube channels, and Social media accounts that the AI monitors daily.
         </p>
       </div>
@@ -75,10 +75,10 @@ export default async function SourcesPage() {
         
         {/* Source List */}
         <div className="space-y-4">
-          <h2 className="text-xl font-heading font-semibold text-white/90">Active Sources ({sources.length})</h2>
+          <h2 className="text-xl font-heading font-bold text-gray-900 pb-2 border-b border-gray-100">Active Sources ({sources.length})</h2>
           
           {sources.length === 0 ? (
-            <div className="p-8 glass-card text-center text-muted">
+            <div className="p-8 glass-card border-dashed text-center text-gray-500 font-medium">
               No sources found. Add your first source on the right.
             </div>
           ) : (
@@ -86,21 +86,21 @@ export default async function SourcesPage() {
               {sources.map(source => (
                 <div key={source.id} className="glass-card p-4 flex items-center justify-between group">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-200 group-hover:bg-gray-100 transition-colors">
                       {getPlatformIcon(source.platform_type)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white/90">{source.name}</h3>
-                      <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-accent transition-colors truncate max-w-[200px] md:max-w-md block">
+                      <h3 className="font-bold text-gray-900 leading-tight mb-0.5">{source.name}</h3>
+                      <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-gray-500 hover:text-black transition-colors truncate max-w-[200px] md:max-w-md block">
                         {source.url}
                       </a>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${source.is_active ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                  <div className="flex flex-col items-end gap-1.5 ml-4">
+                    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest ${source.is_active ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                       {source.is_active ? 'Active' : 'Inactive'}
                     </span>
-                    <span className="text-[10px] text-muted/60 uppercase">{source.platform_type}</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{source.platform_type}</span>
                   </div>
                 </div>
               ))}
@@ -110,43 +110,43 @@ export default async function SourcesPage() {
 
         {/* Add Source Form */}
         <div className="glass-card p-6 sticky top-24">
-          <h2 className="text-lg font-heading font-semibold text-white/90 flex items-center gap-2 mb-6">
-            <Plus className="w-5 h-5 text-accent" />
+          <h2 className="text-base font-heading font-bold text-gray-900 flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+            <Plus className="w-5 h-5 text-black" />
             Add New Source
           </h2>
 
-          <form action={addSource} className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="name" className="text-sm font-medium text-white/70">Source Name</label>
+          <form action={addSource} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-gray-500">Source Name</label>
               <input 
                 type="text" 
                 id="name" 
                 name="name" 
                 required 
-                className="w-full bg-primary/50 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all placeholder:text-muted/50"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:bg-white transition-all placeholder:text-gray-400"
                 placeholder="e.g. AI Engineering Repo"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="url" className="text-sm font-medium text-white/70">Endpoint URL</label>
+            <div className="space-y-2">
+              <label htmlFor="url" className="text-xs font-bold uppercase tracking-widest text-gray-500">Endpoint URL</label>
               <input 
                 type="url" 
                 id="url" 
                 name="url" 
                 required 
-                className="w-full bg-primary/50 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all placeholder:text-muted/50"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:bg-white transition-all placeholder:text-gray-400"
                 placeholder="https://..."
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="platform_type" className="text-sm font-medium text-white/70">Platform Type</label>
+            <div className="space-y-2">
+              <label htmlFor="platform_type" className="text-xs font-bold uppercase tracking-widest text-gray-500">Platform Type</label>
               <select 
                 id="platform_type" 
                 name="platform_type" 
                 required
-                className="w-full bg-primary/50 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all appearance-none"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:bg-white transition-all"
               >
                 <option value="blog">Blog / RSS</option>
                 <option value="youtube">YouTube Channel</option>
@@ -157,7 +157,7 @@ export default async function SourcesPage() {
 
             <button 
               type="submit" 
-              className="w-full mt-2 bg-gradient-to-r from-accent to-purple-600 hover:from-accent/90 hover:to-purple-500 text-white font-semibold py-2.5 rounded-lg shadow-lg shadow-accent/20 hover:shadow-accent/40 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+              className="w-full mt-4 bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg shadow-sm border border-transparent hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 text-sm"
             >
               Add Source
             </button>
