@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en">
       <body
         className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col relative overflow-x-hidden`}
         suppressHydrationWarning
