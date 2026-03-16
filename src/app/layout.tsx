@@ -3,8 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { Zap, LayoutGrid, Rss } from "lucide-react";
-import SettingsDropdown from "@/components/SettingsDropdown";
-import SyncButton from "@/components/SyncButton";
+import Navbar from "@/components/Navbar";
 
 // Load Premium Fonts
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -27,44 +26,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {/* Top Navigation Bar - Minimalist */}
-        <header className="sticky top-0 z-50 glass w-full border-b border-gray-200 bg-white/90">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center transition-transform group-hover:scale-105">
-                <Zap className="w-4 h-4 text-white fill-white" />
-              </div>
-              <span className="font-heading font-bold text-xl tracking-tight text-gray-900">
-                AI Hub
-              </span>
-            </Link>
-
-            {/* Navigation Links */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
-              >
-                <LayoutGrid className="w-4 h-4" />
-                Dashboard
-              </Link>
-              <Link
-                href="/sources"
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
-              >
-                <Rss className="w-4 h-4" />
-                Sources
-              </Link>
-            </nav>
-
-            {/* Right side actions */}
-            <div className="flex items-center gap-3">
-              <SyncButton />
-              <div className="w-px h-4 bg-gray-200"></div>
-              <SettingsDropdown />
-            </div>
-          </div>
-        </header>
+        <Navbar />
 
         {/* Main Content Area */}
         <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 relative z-0">
