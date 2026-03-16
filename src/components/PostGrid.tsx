@@ -37,6 +37,7 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
   const [sortOption, setSortOption] = useState<"score-desc" | "date-desc" | "date-asc">("score-desc");
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
+  const [columns, setColumns] = useState<1 | 2 | 3>(3);
 
   const toggleExpand = (id: string) => {
     setExpandedPosts(prev => ({ ...prev, [id]: !prev[id] }));
@@ -66,28 +67,46 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
       
       {/* Newspaper Header Style Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-black pb-4">
-        <div className="flex items-center gap-3">
-          <span className="font-serif font-black text-xs uppercase tracking-wider">Filter News</span>
-          <select 
-            className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-serif font-black text-xs uppercase tracking-wider">Filter News</span>
+            <select 
+              className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-serif font-black text-xs uppercase tracking-wider">Sort By</span>
+            <select 
+              className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as any)}
+            >
+              <option value="score-desc">Ranking</option>
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+            </select>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="font-serif font-black text-xs uppercase tracking-wider">Sort By</span>
-          <select 
-            className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value as any)}
-          >
-            <option value="score-desc">Ranking</option>
-            <option value="date-desc">Newest First</option>
-            <option value="date-asc">Oldest First</option>
-          </select>
+        {/* Column Layout Switcher (Hidden on Mobile, defaults to 1 col) */}
+        <div className="hidden sm:flex items-center gap-2">
+          <span className="font-serif font-black text-xs uppercase tracking-wider">View:</span>
+          <div className="flex border border-black divide-x divide-black">
+            {[1, 2, 3].map((num) => (
+              <button 
+                key={num}
+                onClick={() => setColumns(num as 1 | 2 | 3)}
+                className={`px-2.5 py-1 text-[10px] font-black uppercase transition-colors ${columns === num ? 'bg-black text-white' : 'hover:bg-black/5 text-black'}`}
+              >
+                {num} Col
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -96,7 +115,13 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
            <p className="font-serif text-gray-500">No headlines match the selected topic.</p>
         </div>
       ) : (
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-6">
+        <div className={`gap-8 space-y-6 ${
+          columns === 1 
+            ? "columns-1" 
+            : columns === 2 
+              ? "columns-1 md:columns-2" 
+              : "columns-1 md:columns-2 lg:columns-3"
+        }`}>
           {filteredAndSortedPosts.map((post) => {
             const colorClass = categoryColors[post.category] || categoryColors["Default"];
             let formattedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Today";
