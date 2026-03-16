@@ -18,6 +18,11 @@ export async function POST(request: Request) {
     }
     const ai = new GoogleGenAI({ apiKey });
 
+    // 1.5. Read Sync Frequency Setting
+    const configSnap = await db.collection("settings").doc("sync_config").get();
+    const frequency = configSnap.exists ? configSnap.data()?.frequency : "manual";
+    console.log(`Current Sync Frequency Rule: ${frequency}`);
+
     // 2. Fetch Active Sources
     const sourcesSnapshot = await db.collection("sources")
       .where("is_active", "==", true)

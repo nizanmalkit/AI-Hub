@@ -1,0 +1,17 @@
+name: Daily AI Sync Cron
+
+on:
+  schedule:
+    # Runs at 07:00 AM UTC everyday (approx 9:00 AM local)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Allows manual run inside GitHub Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger AI Hub Sync Route
+        run: |
+          # Replace with your LIVE deployed Vercel URL or Production endpoint!
+          curl -X POST https://YOUR_DEPLOYED_APP_URL/api/sync \
+          -H "Content-Type: application/json"
