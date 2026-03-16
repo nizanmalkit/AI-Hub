@@ -18,17 +18,17 @@ type AIPost = {
 // Map categories to specific accent colors to make the UI less boring
 // Map categories to distinct minimal colors
 const categoryColors: Record<string, string> = {
-  "LLM Updates": "border-red-600 text-red-700",
-  "Tutorials": "border-blue-600 text-blue-700",
-  "Policy": "border-black text-black",
-  "Open Source": "border-emerald-600 text-emerald-700",
-  "Default": "border-gray-500 text-gray-500"
+  "LLM Updates": "bg-red-50 text-red-700 border-red-200",
+  "Tutorials": "bg-blue-50 text-blue-700 border-blue-200",
+  "Policy": "bg-slate-100 text-slate-700 border-slate-200",
+  "Open Source": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "Default": "bg-gray-50 text-gray-700 border-gray-200"
 };
 
 const categoryIconColors: Record<string, string> = {
   "LLM Updates": "text-red-600",
   "Tutorials": "text-blue-600",
-  "Policy": "text-black",
+  "Policy": "text-slate-600",
   "Open Source": "text-emerald-600",
   "Default": "text-gray-600"
 };
@@ -65,13 +65,13 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
   return (
     <div className="space-y-8">
       
-      {/* Newspaper Header Style Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-black pb-4">
+      {/* Modern Header Style Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-slate-200 pb-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-serif font-black text-xs uppercase tracking-wider">Filter News</span>
+            <span className="font-semibold text-xs tracking-wide text-slate-500">Topic:</span>
             <select 
-              className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
+              className="text-xs bg-white border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-medium text-slate-700"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
             >
@@ -80,9 +80,9 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-serif font-black text-xs uppercase tracking-wider">Sort By</span>
+            <span className="font-semibold text-xs tracking-wide text-slate-500">Sort:</span>
             <select 
-              className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
+              className="text-xs bg-white border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-medium text-slate-700"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as any)}
             >
@@ -93,15 +93,15 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
           </div>
         </div>
 
-        {/* Column Layout Switcher (Hidden on Mobile, defaults to 1 col) */}
+        {/* Column Layout Switcher */}
         <div className="hidden sm:flex items-center gap-2">
-          <span className="font-serif font-black text-xs uppercase tracking-wider">View:</span>
-          <div className="flex border border-black divide-x divide-black">
+          <span className="font-semibold text-xs tracking-wide text-slate-500">Layout:</span>
+          <div className="flex border border-slate-200 rounded-md overflow-hidden divide-x divide-slate-200">
             {[1, 2, 3].map((num) => (
               <button 
                 key={num}
                 onClick={() => setColumns(num as 1 | 2 | 3)}
-                className={`px-2.5 py-1 text-[10px] font-black uppercase transition-colors ${columns === num ? 'bg-black text-white' : 'hover:bg-black/5 text-black'}`}
+                className={`px-3 py-1 text-[11px] font-bold transition-colors ${columns === num ? 'bg-indigo-600 text-white' : 'hover:bg-slate-50 text-slate-600'}`}
               >
                 {num} Col
               </button>
@@ -111,8 +111,8 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
       </div>
 
       {filteredAndSortedPosts.length === 0 ? (
-        <div className="py-20 text-center border-t border-black">
-           <p className="font-serif text-gray-500">No headlines match the selected topic.</p>
+        <div className="py-20 text-center border-t border-slate-200">
+           <p className="text-slate-500">No headlines match the selected topic.</p>
         </div>
       ) : (
         <div className={`gap-8 space-y-6 ${
@@ -128,51 +128,51 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
             const isExpanded = expandedPosts[post.id] || false;
 
             return (
-              <div key={post.id} className="glass-card break-inside-avoid relative flex flex-col h-full hover:bg-red-50/20 group">
+              <div key={post.id} className="glass-card break-inside-avoid relative flex flex-col h-full hover:border-indigo-600/30 group">
                 
-                <div className="flex items-baseline justify-between gap-3 mb-2">
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${colorClass}`}>
                     {post.category}
                   </span>
-                  <span className="text-[10px] font-medium text-gray-500">
+                  <span className="text-[11px] font-semibold text-slate-400">
                     {formattedDate}
                   </span>
                 </div>
 
-                {/* Headline using Serif Font */}
-                <h3 className="font-serif font-black text-xl text-black leading-snug mb-3">
+                {/* Headline using Sans Font */}
+                <h3 className="font-bold text-base text-slate-900 leading-snug mb-2 group-hover:text-indigo-600 transition-colors">
                   {post.original_title || "Aggregated Headlines"}
                 </h3>
 
                 {/* Summary with 3 line clamp */}
-                <p className={`text-gray-800 leading-relaxed mb-1 font-medium text-sm ${isExpanded ? '' : 'line-clamp-3 overflow-hidden'}`}>
+                <p className={`text-slate-600 leading-relaxed font-medium text-sm mb-2 ${isExpanded ? '' : 'line-clamp-3 overflow-hidden'}`}>
                   {post.ai_summary}
                 </p>
 
                 <button 
                   onClick={() => toggleExpand(post.id)}
-                  className="text-[9px] font-black uppercase tracking-wider text-red-600 hover:underline mb-4 flex items-center gap-1 text-left"
+                  className="text-xs font-bold text-indigo-600 hover:underline mb-4 flex items-center gap-1 text-left"
                 >
                   {isExpanded ? 'Show Less ▴' : 'Read Summary ▾'}
                 </button>
 
-                <div className="pt-3 border-t border-dotted border-gray-300 flex items-baseline justify-between mt-auto">
-                  <span className="text-[10px] font-bold text-gray-600 tracking-wide">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+                  <span className="text-xs font-bold text-slate-800">
                     {post.source_name}
                   </span>
                   <a 
                     href={post.original_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[10px] font-black uppercase tracking-wider text-black hover:text-red-600 flex items-center gap-1"
+                    className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition-colors"
                   >
                     Read
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
 
                 {/* Rank Indicator */}
-                <div className="absolute top-0 right-0 font-serif font-black text-gray-200 text-3xl select-none group-hover:text-red-100 transition-colors -z-10 mt-1">
+                <div className="absolute top-0 right-0 font-black text-slate-100/80 text-3xl select-none group-hover:text-indigo-50 transition-colors -z-10 mt-2 mr-2">
                   #{post.importance_score}
                 </div>
               </div>
