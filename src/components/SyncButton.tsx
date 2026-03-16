@@ -8,12 +8,27 @@ export default function SyncButton() {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    // Webhook HTTP fetch trigger here...
     
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/sync", {
+        method: "POST",
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.status === "success") {
+        alert(`🎉 Sync Result: ${data.message}`);
+        // Optional: Refresh the page layout to fetch new items
+        window.location.reload();
+      } else {
+        alert(`⚠️ Sync Warning: ${data.message || "Something went wrong"}`);
+      }
+    } catch (error) {
+      console.error("Sync trigger failed:", error);
+      alert("🚨 Sync Failed: Could not connect to aggregator backend.");
+    } finally {
       setIsSyncing(false);
-      alert("Sync initiated in background!");
-    }, 800);
+    }
   };
 
   return (

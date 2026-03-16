@@ -11,7 +11,7 @@ if (!admin.apps.length) {
         }),
       });
     } else {
-      admin.initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "ai-hub-05400027" });
+      admin.initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "ai-hub-76eca" });
     }
   } catch (error) {
     console.error('Firebase admin initialization error', error);

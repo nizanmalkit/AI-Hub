@@ -21,14 +21,20 @@ async function addSource(formData: FormData) {
 
   if (!name || !url || !platform_type) return;
 
-  await db.collection("sources").add({
-    name,
-    url,
-    platform_type,
-    is_active: true,
-    created_at: new Date(),
-    added_by: "manual",
-  });
+  try {
+    await db.collection("sources").add({
+      name,
+      url,
+      platform_type,
+      is_active: true,
+      created_at: new Date(),
+      added_by: "manual",
+    });
+  } catch (error) {
+    console.error("Failed to add source to Firestore:", error);
+    // You could set a cookie or return an error state if using standard React actions,
+    // but a try/catch here prevents a full-screen crash.
+  }
 
   revalidatePath("/sources");
 }

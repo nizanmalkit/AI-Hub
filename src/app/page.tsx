@@ -11,7 +11,7 @@ type AIPost = {
   ai_summary: string;
   category: string;
   importance_score: number;
-  published_at: FirebaseFirestore.Timestamp;
+  published_at: string;
   source_name?: string; // Hydrated
 };
 
@@ -27,7 +27,7 @@ const dummyPosts: AIPost[] = [
     ai_summary: "Google announced that Gemini 1.5 Pro is now available to all developers in 200+ countries. It features a massive 2 million token context window. This marks a significant leap in large-scale context processing for enterprise apps.",
     category: "LLM Updates",
     importance_score: 10,
-    published_at: { toDate: () => new Date() } as any,
+    published_at: new Date().toISOString(),
     source_name: "Google AI Blog"
   },
   {
@@ -38,7 +38,7 @@ const dummyPosts: AIPost[] = [
     ai_summary: "A deep dive into advanced Retreival-Augmented Generation techniques. The speaker explains how to handle semantic chunking effectively. Great insights for reducing hallucination rates in production.",
     category: "Tutorials",
     importance_score: 8,
-    published_at: { toDate: () => new Date(Date.now() - 86400000) } as any,
+    published_at: new Date(Date.now() - 86400000).toISOString(),
     source_name: "AI Engineering YouTube"
   },
     {
@@ -49,7 +49,7 @@ const dummyPosts: AIPost[] = [
     ai_summary: "The EU AI Act officially comes into force, introducing strict compliance tiers. Startups are given a 12-month grace period to classify their risk models. Fines for non-compliance can reach up to 7% of global revenue.",
     category: "Policy",
     importance_score: 9,
-    published_at: { toDate: () => new Date(Date.now() - 172800000) } as any,
+    published_at: new Date(Date.now() - 172800000).toISOString(),
     source_name: "Tech Policy Tracker"
   }
 ];
@@ -77,6 +77,7 @@ async function getPosts(): Promise<AIPost[]> {
       posts.push({
         id: doc.id,
         ...data,
+        published_at: data.published_at?.toDate ? data.published_at.toDate().toISOString() : new Date().toISOString(),
         source_name: sourceName
       } as AIPost);
     }

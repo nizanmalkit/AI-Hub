@@ -1,0 +1,127 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.scheduledSync = exports.executeSync = void 0;
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+// @ts-ignore - Ignore missing types if they aren't fully populated inside the functions env workspace
+const rss_parser_1 = require("rss-parser");
+const genai_1 = require("@google/genai");
+admin.initializeApp();
+const parser = new rss_parser_1.default();
+// Core synchronization logic shared by both HTTP and Scheduled triggers
+async function runSync() {
+    functions.logger.info("Executing Sync Task started", { structuredData: true });
+    // 1. Initialize Gemini Client
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not set in environment variables.");
+    }
+    const ai = new genai_1.GoogleGenAI({ apiKey });
+    const db = admin.firestore();
+    // 2. Fetch Active Sources
+    const sourcesSnapshot = await db.collection("sources")
+        .where("is_active", "==", true)
+        .get();
+    if (sourcesSnapshot.empty) {
+        functions.logger.info("No active sources found.");
+        return { status: "success", message: "No active sources to sync." };
+    }
+    const scrapedItems = [];
+    const now = Date.now();
+    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+    // 3. Scrape Feeds
+    for (const doc of sourcesSnapshot.docs) {
+        const source = doc.data();
+        const sourceId = doc.id;
+        const sourceName = source.name || "Unknown Source";
+        const sourceUrl = source.url;
+        functions.logger.info(`Scraping Source: ${sourceName} (${sourceUrl})`);
+        try {
+            const feed = await parser.parseURL(sourceUrl);
+            for (const item of feed.items) {
+                const pubDate = item.pubDate ? new Date(item.pubDate).getTime() : now;
+                if (pubDate >= twentyFourHoursAgo) {
+                    scrapedItems.push({
+                        source_id: sourceId,
+                        source_name: sourceName,
+                        title: item.title || "No Title",
+                        description: item.summary || item.contentSnippet || item.content || "",
+                        link: item.link || sourceUrl,
+                        pubDate: new Date(pubDate).toISOString()
+                    });
+                }
+            }
+        }
+        catch (scrapeError) {
+            functions.logger.error(`Failed to scrape ${sourceName}:`, scrapeError);
+        }
+    }
+    if (scrapedItems.length === 0) {
+        functions.logger.info("No new items found in the last 24 hours.");
+        return { status: "success", message: "No new updates found to process." };
+    }
+    functions.logger.info(`Processing ${scrapedItems.length} items with Gemini`);
+    // 4. Construct Prompt
+    const prompt = `
+  You are an expert AI aggregator. Below are the latest updates from various tech sources fetched in the last 24 hours.
+  
+  Your task is to:
+  1. Read all updates.
+  2. Group related items together.
+  3. Select at most the TOP 5 most significant developments.
+  4. For each selected item, write a 3-sentence summary highlighting why it matters.
+  5. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
+  6. Score importance (1 to 10).
+  
+  Output MUST be a STRICTLY valid JSON array of objects with schema:
+  {
+    "source_id": "string",
+    "original_title": "string",
+    "original_url": "string",
+    "ai_summary": "string",
+    "category": "string",
+    "importance_score": number
+  }`;
+    const aiResponse = await ai.models.generateContent({
+        model: "gemini-1.5-pro",
+        contents: prompt,
+        config: { responseMimeType: "application/json" }
+    });
+    const responseText = aiResponse.text;
+    if (!responseText)
+        throw new Error("Empty response from Gemini.");
+    const updates = JSON.parse(responseText);
+    // 5. Batch Write
+    const batch = db.batch();
+    for (const update of updates) {
+        const postRef = db.collection("posts").doc();
+        batch.set(postRef, Object.assign(Object.assign({}, update), { published_at: admin.firestore.FieldValue.serverTimestamp() }));
+    }
+    await batch.commit();
+    return { status: "success", message: `Curated and posted ${updates.length} items.` };
+}
+// 1. Manual HTTP Trigger Webhook
+exports.executeSync = functions.https.onRequest(async (request, response) => {
+    try {
+        const result = await runSync();
+        response.send(result);
+    }
+    catch (error) {
+        functions.logger.error("Sync Logic Error", error);
+        response.status(500).send({ status: "error", message: String(error) });
+    }
+});
+// 2. Automated Trigger - Runs Daily at 7:00 AM
+exports.scheduledSync = functions.pubsub
+    .schedule("0 7 * * *")
+    .timeZone("UTC") // Can be adjusted to user's locale
+    .onRun(async (context) => {
+    functions.logger.info("Running daily scheduled synchronization task.");
+    try {
+        await runSync();
+    }
+    catch (error) {
+        functions.logger.error("Error running scheduled sync", error);
+    }
+});
+//# sourceMappingURL=index.js.map

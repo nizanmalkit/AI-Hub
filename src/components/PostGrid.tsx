@@ -11,7 +11,7 @@ type AIPost = {
   ai_summary: string;
   category: string;
   importance_score: number;
-  published_at: any;
+  published_at: string;
   source_name?: string;
 };
 
@@ -57,8 +57,8 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
         return b.importance_score - a.importance_score;
       }
       
-      const dateA = a.published_at?.seconds || a.published_at?.toDate?.()?.getTime() || 0;
-      const dateB = b.published_at?.seconds || b.published_at?.toDate?.()?.getTime() || 0;
+      const dateA = new Date(a.published_at).getTime();
+      const dateB = new Date(b.published_at).getTime();
       
       if (sortOption === "date-desc") return dateB - dateA;
       if (sortOption === "date-asc") return dateA - dateB;
@@ -121,10 +121,7 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
             // Format Date safely
             let formattedDate = "Unknown Date";
             if (post.published_at) {
-              try {
-                const d = post.published_at.toDate ? post.published_at.toDate() : new Date(post.published_at.seconds * 1000);
-                formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-              } catch(e) {}
+              formattedDate = new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             }
 
             return (
