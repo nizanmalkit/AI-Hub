@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { Zap, LayoutGrid, Rss } from "lucide-react";
 import SettingsDropdown from "@/components/SettingsDropdown";
+import SyncButton from "@/components/SyncButton";
 
 // Load Premium Fonts
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -57,7 +58,9 @@ export default function RootLayout({
             </nav>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <SyncButton />
+              <div className="w-px h-4 bg-gray-200"></div>
               <SettingsDropdown />
             </div>
           </div>

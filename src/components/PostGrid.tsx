@@ -16,152 +16,139 @@ type AIPost = {
 };
 
 // Map categories to specific accent colors to make the UI less boring
+// Map categories to distinct minimal colors
 const categoryColors: Record<string, string> = {
-  "LLM Updates": "bg-blue-100 text-blue-700 border-blue-200",
-  "Tutorials": "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "Policy": "bg-amber-100 text-amber-700 border-amber-200",
-  "Open Source": "bg-purple-100 text-purple-700 border-purple-200",
-  "Default": "bg-gray-100 text-gray-700 border-gray-200"
+  "LLM Updates": "border-red-600 text-red-700",
+  "Tutorials": "border-blue-600 text-blue-700",
+  "Policy": "border-black text-black",
+  "Open Source": "border-emerald-600 text-emerald-700",
+  "Default": "border-gray-500 text-gray-500"
 };
 
 const categoryIconColors: Record<string, string> = {
-  "LLM Updates": "text-blue-600",
-  "Tutorials": "text-emerald-600",
-  "Policy": "text-amber-600",
-  "Open Source": "text-purple-600",
+  "LLM Updates": "text-red-600",
+  "Tutorials": "text-blue-600",
+  "Policy": "text-black",
+  "Open Source": "text-emerald-600",
   "Default": "text-gray-600"
 };
 
 export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
   const [sortOption, setSortOption] = useState<"score-desc" | "date-desc" | "date-asc">("score-desc");
   const [filterCategory, setFilterCategory] = useState<string>("All");
+  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
 
-  // Get unique categories for the filter dropdown
+  const toggleExpand = (id: string) => {
+    setExpandedPosts(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const categories = useMemo(() => {
     const cats = new Set(initialPosts.map(p => p.category));
     return ["All", ...Array.from(cats)];
   }, [initialPosts]);
 
-  // Apply filtering and sorting
   const filteredAndSortedPosts = useMemo(() => {
     let result = [...initialPosts];
-
-    // Filter
-    if (filterCategory !== "All") {
-      result = result.filter(p => p.category === filterCategory);
-    }
-
-    // Sort
+    if (filterCategory !== "All") result = result.filter(p => p.category === filterCategory);
     result.sort((a, b) => {
-      if (sortOption === "score-desc") {
-        return b.importance_score - a.importance_score;
-      }
-      
+      if (sortOption === "score-desc") return b.importance_score - a.importance_score;
       const dateA = new Date(a.published_at).getTime();
       const dateB = new Date(b.published_at).getTime();
-      
       if (sortOption === "date-desc") return dateB - dateA;
       if (sortOption === "date-asc") return dateA - dateB;
-      
       return 0;
     });
-
     return result;
   }, [initialPosts, sortOption, filterCategory]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       
-      {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-        
-        {/* Filter */}
+      {/* Newspaper Header Style Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-black pb-4">
         <div className="flex items-center gap-3">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm font-semibold text-gray-700 uppercase tracking-widest text-[10px]">Filter</span>
+          <span className="font-serif font-black text-xs uppercase tracking-wider">Filter News</span>
           <select 
-            className="text-sm bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-black focus:border-black font-medium text-gray-800"
+            className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
           >
-            {categories.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
-        {/* Sort */}
         <div className="flex items-center gap-3">
-          <ArrowUpDown className="w-4 h-4 text-gray-400" />
-          <span className="text-sm font-semibold text-gray-700 uppercase tracking-widest text-[10px]">Sort by</span>
+          <span className="font-serif font-black text-xs uppercase tracking-wider">Sort By</span>
           <select 
-            className="text-sm bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-black focus:border-black font-medium text-gray-800"
+            className="text-xs bg-transparent border-b border-black px-1 py-0.5 focus:outline-none focus:border-red-600 font-medium text-gray-900"
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as any)}
           >
-            <option value="score-desc">Highest Score</option>
+            <option value="score-desc">Ranking</option>
             <option value="date-desc">Newest First</option>
             <option value="date-asc">Oldest First</option>
           </select>
         </div>
-
       </div>
 
-      {/* Grid */}
       {filteredAndSortedPosts.length === 0 ? (
-        <div className="py-20 text-center glass-card border-dashed">
-           <p className="text-gray-500 font-medium">No insights match the selected filters.</p>
+        <div className="py-20 text-center border-t border-black">
+           <p className="font-serif text-gray-500">No headlines match the selected topic.</p>
         </div>
       ) : (
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-6">
           {filteredAndSortedPosts.map((post) => {
             const colorClass = categoryColors[post.category] || categoryColors["Default"];
-            const iconColorClass = categoryIconColors[post.category] || categoryIconColors["Default"];
-            
-            // Format Date safely
-            let formattedDate = "Unknown Date";
-            if (post.published_at) {
-              formattedDate = new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
+            let formattedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Today";
+            const isExpanded = expandedPosts[post.id] || false;
 
             return (
-              <div key={post.id} className="glass-card p-6 break-inside-avoid relative group flex flex-col h-full hover:-translate-y-1">
+              <div key={post.id} className="glass-card break-inside-avoid relative flex flex-col h-full hover:bg-red-50/20 group">
                 
-                {/* Importance Badge */}
-                <div className={`absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 border-white ${post.importance_score >= 9 ? 'bg-indigo-600 text-white' : 'bg-black text-white'}`}>
-                  {post.importance_score}
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold border ${colorClass}`}>
-                    <Tag className={`w-3.5 h-3.5 ${iconColorClass}`} />
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
                     {post.category}
                   </span>
-                  <span className="text-xs font-semibold text-gray-400 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-medium text-gray-500">
                     {formattedDate}
                   </span>
                 </div>
 
-                <p className="text-gray-800 leading-relaxed mb-8 font-medium text-base">
+                {/* Headline using Serif Font */}
+                <h3 className="font-serif font-black text-xl text-black leading-snug mb-3">
+                  {post.original_title || "Aggregated Headlines"}
+                </h3>
+
+                {/* Summary with 3 line clamp */}
+                <p className={`text-gray-800 leading-relaxed mb-1 font-medium text-sm ${isExpanded ? '' : 'line-clamp-3 overflow-hidden'}`}>
                   {post.ai_summary}
                 </p>
 
-                <div className="pt-5 border-t border-gray-100 flex items-center justify-between mt-auto">
-                  <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Source</span>
-                      <span className="text-sm text-gray-900 font-semibold truncate max-w-[150px]">{post.source_name}</span>
-                  </div>
-                  
+                <button 
+                  onClick={() => toggleExpand(post.id)}
+                  className="text-[9px] font-black uppercase tracking-wider text-red-600 hover:underline mb-4 flex items-center gap-1 text-left"
+                >
+                  {isExpanded ? 'Show Less ▴' : 'Read Summary ▾'}
+                </button>
+
+                <div className="pt-3 border-t border-dotted border-gray-300 flex items-baseline justify-between mt-auto">
+                  <span className="text-[10px] font-bold text-gray-600 tracking-wide">
+                    {post.source_name}
+                  </span>
                   <a 
                     href={post.original_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-md bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-black transition-colors flex items-center gap-2 text-xs font-semibold border border-gray-200"
+                    className="text-[10px] font-black uppercase tracking-wider text-black hover:text-red-600 flex items-center gap-1"
                   >
-                    Original
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    Read
+                    <ExternalLink className="w-3 h-3" />
                   </a>
+                </div>
+
+                {/* Rank Indicator */}
+                <div className="absolute top-0 right-0 font-serif font-black text-gray-200 text-3xl select-none group-hover:text-red-100 transition-colors -z-10 mt-1">
+                  #{post.importance_score}
                 </div>
               </div>
             )

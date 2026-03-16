@@ -30,14 +30,14 @@ export default function SyncButton() {
       setIsSyncing(false);
     }
   };
-
+  
   return (
     <button
       onClick={handleSync}
       disabled={isSyncing}
-      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
         isSyncing
-          ? "bg-gray-100 text-gray-500 cursor-not-allowed border border-gray-200"
+          ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
           : "bg-black hover:bg-gray-800 text-white shadow-sm border border-transparent"
       }`}
     >

@@ -96,16 +96,13 @@ export default async function Dashboard() {
     <div className="space-y-12 animate-in fade-in duration-700">
       
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b-2 border-black pb-3">
         <div>
-          <h1 className="text-4xl heading-text mb-3">Curated Insights</h1>
-          <p className="text-gray-500 text-lg max-w-2xl font-medium">
-            The most important developments in Artificial Intelligence, aggregated and summarized automatically by Gemini.
+          <h1 className="text-xl font-serif font-black uppercase tracking-wide text-black mb-1">Curated Insights</h1>
+          <p className="text-gray-500 text-xs max-w-2xl font-medium">
+            The most important developments in AI, summarized daily by Gemini 2.5.
           </p>
         </div>
-        
-        {/* Sync Trigger action */}
-        <SyncButton />
       </div>
 
       {/* Dynamic Grid with Sort & Filter */}

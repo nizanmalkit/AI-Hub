@@ -1,25 +1,24 @@
 @import "tailwindcss";
 
+@import "tailwindcss";
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #fdfbf7; /* Newspaper paper tint */
+  --foreground: #111111; /* Ink black */
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm;
-  }
-  
   .glass-card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300;
+    @apply bg-transparent border-t-2 border-black pt-4 pb-6 transition-all duration-200 hover:bg-black/5;
   }
   
   .heading-text {
-    @apply font-bold tracking-tight text-slate-900;
+    @apply font-serif font-black tracking-normal text-black;
   }
 }
