@@ -32,7 +32,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
-  const [sortOption, setSortOption] = useState<"score-desc" | "date-desc" | "date-asc">("score-desc");
+  const [sortOption, setSortOption] = useState<"score-desc" | "date-desc" | "date-asc">("date-desc");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
@@ -189,6 +189,22 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
     });
     return result;
   }, [initialPosts, sortOption, selectedCategories, selectedTypes, showSavedOnly, savedIds, archivedIds, showArchivedOnly, searchQuery, language]);
+  
+  const featuredPost = useMemo(() => {
+    if (filteredAndSortedPosts.length === 0) return null;
+    const sortedByScore = [...filteredAndSortedPosts].sort((a, b) => {
+      if (b.importance_score !== a.importance_score) {
+        return b.importance_score - a.importance_score;
+      }
+      return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+    });
+    return sortedByScore[0];
+  }, [filteredAndSortedPosts]);
+
+  const gridPosts = useMemo(() => {
+    if (!featuredPost) return filteredAndSortedPosts;
+    return filteredAndSortedPosts.filter(p => p.id !== featuredPost.id);
+  }, [filteredAndSortedPosts, featuredPost]);
 
   return (
     <div className="space-y-6">
@@ -337,7 +353,9 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
         <div className="space-y-8">
           {/* Featured Post */}
           {(() => {
-            const post = filteredAndSortedPosts[0];
+            const post = featuredPost;
+            if (!post) return null;
+            
             const colorClass = categoryColors[post.category] || categoryColors["Default"];
             let formattedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Today";
             const isExpanded = expandedPosts[post.id] || false;
@@ -387,7 +405,7 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
 
           {/* Standard Posts Grid */}
           <div className={`gap-8 space-y-6 ${columns === 1 ? "columns-1" : columns === 2 ? "columns-1 md:columns-2" : "columns-1 md:columns-2 lg:columns-3"}`}>
-            {filteredAndSortedPosts.slice(1).map((post) => {
+            {gridPosts.map((post) => {
               const colorClass = categoryColors[post.category] || categoryColors["Default"];
               let formattedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Today";
               const isExpanded = expandedPosts[post.id] || false;
