@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc; /* Modern light slate background */
-  --foreground: #020617; /* Slate-950 dark text */
+  --background: #f8f9fa; /* Surface Layer 0 */
+  --surface-container-low: #f1f4f6; /* Sidebar / Navigation */
+  --primary: #006c49; /* Emerald Green */
+  --primary-dim: #005f40;
+  --on-surface: #2b3437; /* Muted Black for Editorial Look */
 }
 
 body {
   background-color: var(--background);
-  color: var(--foreground);
+  color: var(--on-surface);
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5;
+    @apply bg-white rounded-lg p-6 transition-all duration-200 hover:bg-[#fafafa];
   }
   
   .heading-text {
-    @apply font-bold tracking-tight text-slate-900;
+    @apply font-serif font-black tracking-tight text-[#2b3437];
   }
 }

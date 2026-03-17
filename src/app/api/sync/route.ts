@@ -82,18 +82,23 @@ export async function POST(request: Request) {
     1. Read all updates.
     2. Group related items together.
     3. Select at most the TOP 5 most useful/significant developments.
-    4. For each selected item, write a 3-sentence summary highlighting why it matters.
+    4. For each selected item, write a 3-sentence summary in English.
     5. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
     6. Score importance (1 to 10).
+    7. Extract at least 3-5 keywords or tags describing exact topics (e.g. "RAG", "VectorDB", "Agents").
+    8. Provide accurate Hebrew translations for BOTH the Title and the 3-sentence summary that flow naturally for right-to-left readers.
     
     Output MUST be a STRICTLY valid JSON array of objects with schema:
     {
       "source_id": "string (match input source_id)",
-      "original_title": "string",
+      "original_title": "string (English title)",
+      "title_he": "string (Accurate Hebrew translation of the title)",
       "original_url": "string",
-      "ai_summary": "string (3 sentence explanation)",
+      "ai_summary": "string (3 sentence explanation in English)",
+      "ai_summary_he": "string (3 sentence explanation in Hebrew)",
       "category": "string",
-      "importance_score": number
+      "importance_score": number,
+      "keywords": ["string"]
     }
 
     Input Data:
@@ -124,6 +129,32 @@ export async function POST(request: Request) {
 
     await batch.commit();
     console.log(`Successfully added ${updates.length} curated posts to Firestore.`);
+
+    // 🏆 7. Smart Archival Maintenance (Items older than 30 days)
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const staleSnap = await db.collection("posts")
+        .where("published_at", "<", thirtyDaysAgo)
+        .limit(100)
+        .get();
+
+      if (!staleSnap.empty) {
+        const archiveBatch = db.batch();
+        let archiveCount = 0;
+        staleSnap.docs.forEach(doc => {
+          if (doc.data().archived !== true) {
+            archiveBatch.update(doc.ref, { archived: true });
+            archiveCount++;
+          }
+        });
+        if (archiveCount > 0) {
+          await archiveBatch.commit();
+          console.log(`Archived ${archiveCount} old posts.`);
+        }
+      }
+    } catch (archiveError) {
+      console.error("Failed archival cycle:", archiveError);
+    }
 
     return NextResponse.json({ 
       status: "success", 

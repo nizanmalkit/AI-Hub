@@ -12,7 +12,8 @@ type AIPost = {
   category: string;
   importance_score: number;
   published_at: string;
-  source_name?: string; // Hydrated
+  source_name?: string;
+  source_type?: string;
 };
 
 export const revalidate = 60; // Revalidate page every 60 seconds
@@ -28,7 +29,8 @@ const dummyPosts: AIPost[] = [
     category: "LLM Updates",
     importance_score: 10,
     published_at: new Date().toISOString(),
-    source_name: "Google AI Blog"
+    source_name: "Google AI Blog",
+    source_type: "blog"
   },
   {
     id: "2",
@@ -39,9 +41,10 @@ const dummyPosts: AIPost[] = [
     category: "Tutorials",
     importance_score: 8,
     published_at: new Date(Date.now() - 86400000).toISOString(),
-    source_name: "AI Engineering YouTube"
+    source_name: "AI Engineering YouTube",
+    source_type: "youtube"
   },
-    {
+  {
     id: "3",
     source_id: "s3",
     original_title: "The State of AI Act Compliance",
@@ -50,7 +53,8 @@ const dummyPosts: AIPost[] = [
     category: "Policy",
     importance_score: 9,
     published_at: new Date(Date.now() - 172800000).toISOString(),
-    source_name: "Tech Policy Tracker"
+    source_name: "Tech Policy Tracker",
+    source_type: "blog"
   }
 ];
 
@@ -67,18 +71,26 @@ async function getPosts(): Promise<AIPost[]> {
     const posts = [];
     for (const doc of postsSnapshot.docs) {
       const data = doc.data();
-      // Hydrate source name
+      if (data.archived === true) continue; // Skip archived posts
+
       let sourceName = "Unknown Source";
+      let sourceType = "blog";
+
       if (data.source_id) {
          const sourceDoc = await db.collection("sources").doc(data.source_id).get();
-         if (sourceDoc.exists) sourceName = sourceDoc.data()?.name || "Unknown Source";
+         if (sourceDoc.exists) {
+            const sData = sourceDoc.data();
+            sourceName = sData?.name || "Unknown Source";
+            sourceType = sData?.type || "blog";
+         }
       }
 
       posts.push({
         id: doc.id,
         ...data,
         published_at: data.published_at?.toDate ? data.published_at.toDate().toISOString() : new Date().toISOString(),
-        source_name: sourceName
+        source_name: sourceName,
+        source_type: sourceType
       } as AIPost);
     }
     return posts;
@@ -95,11 +107,6 @@ export default async function Dashboard() {
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
       
-      {/* Header Section */}
-      <div className="flex items-center border-b-2 border-black pb-1 mb-6">
-        <h1 className="text-sm font-serif font-black uppercase tracking-widest text-black">Headline Feed</h1>
-      </div>
-
       {/* Dynamic Grid with Sort & Filter */}
       <PostGrid initialPosts={posts} />
     </div>

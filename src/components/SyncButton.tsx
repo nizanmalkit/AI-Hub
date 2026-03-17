@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function SyncButton() {
   const [isSyncing, setIsSyncing] = useState(false);
+  const { t } = useLanguage();
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -42,7 +44,7 @@ export default function SyncButton() {
       }`}
     >
       <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
-      {isSyncing ? "Syncing..." : "Sync Now"}
+      {isSyncing ? t("syncing") : t("syncNow")}
     </button>
   );
 }
