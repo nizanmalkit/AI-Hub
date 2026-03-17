@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Zap } from "lucide-react";
+import { Radio } from "lucide-react";
 
 export default function LoginPage() {
   const { user, loginWithGoogle, loading } = useAuth();
