@@ -156,6 +156,15 @@ export async function POST(request: Request) {
       console.error("Failed archival cycle:", archiveError);
     }
 
+    // 🏆 8. Chain Newsletter Dispatch
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      await fetch(`${baseUrl}/api/cron/newsletter`, { method: "POST" });
+      console.log("Automatically triggered sequential newsletter dispatch.");
+    } catch (chainError) {
+      console.error("Failed to chain newsletter trigger:", chainError);
+    }
+
     return NextResponse.json({ 
       status: "success", 
       message: `Curated and posted ${updates.length} items successfully.` 
