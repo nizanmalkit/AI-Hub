@@ -192,13 +192,31 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
   
   const featuredPost = useMemo(() => {
     if (filteredAndSortedPosts.length === 0) return null;
-    const sortedByScore = [...filteredAndSortedPosts].sort((a, b) => {
-      if (b.importance_score !== a.importance_score) {
-        return b.importance_score - a.importance_score;
+
+    const postsWithDay = filteredAndSortedPosts.map(p => {
+      const d = p.published_at ? new Date(p.published_at) : new Date();
+      return {
+        ...p,
+        dayString: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
       }
-      return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
     });
-    return sortedByScore[0];
+
+    const latestDay = postsWithDay.reduce((latest: string, current) => {
+      return current.dayString > latest ? current.dayString : latest;
+    }, "");
+
+    if (!latestDay) return filteredAndSortedPosts[0];
+
+    const latestDayPosts = postsWithDay.filter(p => p.dayString === latestDay);
+
+    const sortedLatest = latestDayPosts.sort((a, b) => {
+       if (b.importance_score !== a.importance_score) {
+          return b.importance_score - a.importance_score;
+       }
+       return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+    });
+
+    return sortedLatest[0];
   }, [filteredAndSortedPosts]);
 
   const gridPosts = useMemo(() => {
