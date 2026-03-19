@@ -6,6 +6,9 @@ import { NewsletterTemplate } from "@/components/emails/NewsletterTemplate";
 import { render } from "@react-email/components";
 import * as React from "react";
 
+export const maxDuration = 60; // Set timeout limit for Vercel to 60 seconds
+
+
 export async function POST(request: Request) {
   try {
     const resendApiKey = process.env.RESEND_API_KEY;

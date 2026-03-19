@@ -5,6 +5,9 @@ import * as admin from "firebase-admin";
 import Parser from "rss-parser";
 import { GoogleGenAI } from "@google/genai";
 
+export const maxDuration = 60; // Set timeout limit for Vercel to 60 seconds
+
+
 const parser = new Parser();
 
 export async function POST(request: Request) {
@@ -159,11 +162,26 @@ export async function POST(request: Request) {
     // 🏆 8. Chain Newsletter Dispatch
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-      await fetch(`${baseUrl}/api/cron/newsletter`, { method: "POST" });
-      console.log("Automatically triggered sequential newsletter dispatch.");
+      const cleanBaseUrl = baseUrl.replace(/\/$/, ""); // Strip trailing slash to avoid double-slashes
+      
+      if (cleanBaseUrl === "http://localhost:3000") {
+        console.warn("⚠️ [Sync API] NEXT_PUBLIC_BASE_URL is not set. Defaulting to localhost:3000. In production (Vercel), this trigger WILL FAIL.");
+      } else {
+        console.log(`[Sync API] Triggering newsletter at: ${cleanBaseUrl}/api/cron/newsletter`);
+      }
+
+      const chainResponse = await fetch(`${cleanBaseUrl}/api/cron/newsletter`, { method: "POST" });
+      
+      if (!chainResponse.ok) {
+        console.error(`❌ Sequential newsletter trigger failed with Status ${chainResponse.status}`);
+      } else {
+        console.log("✅ Automatically triggered sequential newsletter dispatch.");
+      }
     } catch (chainError) {
-      console.error("Failed to chain newsletter trigger:", chainError);
+      console.error("❌ Failed to chain newsletter trigger:", chainError);
     }
+
+
 
     return NextResponse.json({ 
       status: "success", 
