@@ -9,9 +9,26 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aihub-web
     steps:
-      - name: Trigger AI Hub Sync Route
-        run: |
-          # Replace with your LIVE deployed Vercel URL or Production endpoint!
-          curl -X POST https://YOUR_DEPLOYED_APP_URL/api/sync \
-          -H "Content-Type: application/json"
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run AI Sync
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          NEXT_PUBLIC_BASE_URL: https://${{ secrets.DEPLOYED_APP_URL }}
+        run: node scripts/sync_cron.js
