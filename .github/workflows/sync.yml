@@ -13,5 +13,5 @@ jobs:
       - name: Trigger AI Hub Sync Route
         run: |
           # Replace with your LIVE deployed Vercel URL or Production endpoint!
-          curl -X POST https://YOUR_DEPLOYED_APP_URL/api/sync \
+          curl -X POST https://${{ secrets.DEPLOYED_APP_URL }}/api/sync \
           -H "Content-Type: application/json"
