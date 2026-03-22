@@ -51,11 +51,21 @@ async function run() {
   }
 
   // 2. Initialize Firebase Admin
+  const cleanKey = config.privateKey.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+  
+  console.log(`[Debug] Private Key Length: ${cleanKey.length}`);
+  if (cleanKey.includes("-----BEGIN PRIVATE KEY-----")) {
+    console.log("✅ Private Key starts with correct PEM header");
+  } else {
+    console.warn("⚠️ Private Key does NOT start with expected PEM header structure!");
+    console.log(`[Debug] Starts with: "${cleanKey.substring(0, 30)}..."`);
+  }
+
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: config.projectId || "ai-hub-76eca",
       clientEmail: config.clientEmail,
-      privateKey: config.privateKey.replace(/\\n/g, '\n')
+      privateKey: cleanKey
     })
   });
 
