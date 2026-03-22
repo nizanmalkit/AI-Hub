@@ -9,9 +9,6 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: aihub-web
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -22,9 +19,11 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
+        working-directory: aihub-web
         run: npm install
 
       - name: Run AI Sync
+        working-directory: aihub-web
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
