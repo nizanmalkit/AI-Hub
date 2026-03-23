@@ -31,6 +31,24 @@ const categoryColors: Record<string, string> = {
   "Default": "bg-gray-50 text-gray-700 border-gray-200"
 };
 
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  if (!query || !query.trim()) return <>{text}</>;
+
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) => 
+        part.toLowerCase() === query.toLowerCase() 
+          ? <mark key={index} className="bg-yellow-200/80 text-yellow-900 rounded-px px-0.5 font-bold shadow-sm">{part}</mark> 
+          : part
+      )}
+    </>
+  );
+}
+
 export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
   const [sortOption, setSortOption] = useState<"score-desc" | "date-desc" | "date-asc">("date-desc");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -404,11 +422,11 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
                 </div>
 
                 <h2 className="font-bold text-xl md:text-2xl text-slate-900 leading-tight mb-1 group-hover:text-[#006c49] transition-colors">
-                  {language === "he" && post.title_he ? post.title_he : post.original_title || "Aggregated Headlines"}
+                  <HighlightedText text={language === "he" && post.title_he ? post.title_he : post.original_title || "Aggregated Headlines"} query={searchQuery} />
                 </h2>
 
                 <p className="text-slate-600 leading-relaxed font-normal text-sm mb-3">
-                  {language === "he" && post.ai_summary_he ? post.ai_summary_he : post.ai_summary}
+                  <HighlightedText text={language === "he" && post.ai_summary_he ? post.ai_summary_he : post.ai_summary || ""} query={searchQuery} />
                 </p>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -468,11 +486,11 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
                   </div>
 
                   <h3 className="font-bold text-base text-slate-900 leading-snug mb-2 group-hover:text-[#006c49] transition-colors">
-                    {language === "he" && post.title_he ? post.title_he : post.original_title || "Aggregated Headlines"}
+                    <HighlightedText text={language === "he" && post.title_he ? post.title_he : post.original_title || "Aggregated Headlines"} query={searchQuery} />
                     </h3>
 
                   <p className={`text-slate-600 leading-relaxed font-semibold text-xs mb-2 ${isExpanded ? '' : 'line-clamp-3 overflow-hidden'}`}>
-                    {language === "he" && post.ai_summary_he ? post.ai_summary_he : post.ai_summary}
+                    <HighlightedText text={language === "he" && post.ai_summary_he ? post.ai_summary_he : post.ai_summary || ""} query={searchQuery} />
                   </p>
 
                   <button 
