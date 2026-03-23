@@ -23,9 +23,11 @@ export async function POST(request: Request) {
 
     if (!githubToken) {
       console.error("❌ GITHUB_TOKEN is not set in Next.js environment variables.");
+      const loadedKeys = Object.keys(process.env).filter(k => k.toLowerCase().includes("git") || k.toLowerCase().includes("token"));
+      
       return NextResponse.json({ 
         status: "error", 
-        message: "GITHUB_TOKEN is not set on Vercel. Please add it to your Environment Variables dashboard to enable the manual Sync Button." 
+        message: `GITHUB_TOKEN is not set on Vercel. Available related keys found: [${loadedKeys.join(", ")}]. Please confirm the Exact name matches GITHUB_TOKEN perfectly.` 
       }, { status: 500 });
     }
 
