@@ -39,7 +39,7 @@ export const NewsletterTemplate = ({
     <Html>
       <Head />
       <Body style={main}>
-        <Container style={container}>
+        <Container style={{ ...container, direction: isRTL ? "rtl" : "ltr" }}>
           <Section style={header}>
             <Heading style={title}>
               {isRTL ? "🗞️ עדכון ה-AI היומי שלך" : "🗞️ Your Daily AI Update"}
