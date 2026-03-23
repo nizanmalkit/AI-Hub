@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
       // 6. Send via Resend
       const { data, error } = await resend.emails.send({
-        from: "AI Hub <onboarding@resend.dev>", // Resend Sandbox Sender allows sending to account owner
+        from: process.env.RESEND_FROM_EMAIL || "AI Hub <onboarding@resend.dev>", // Configure RESEND_FROM_EMAIL in Vercel to use your domain!
         to: [email],
         subject: language === "he" ? "🗞️ עדכון ה-AI היומי שלך" : "🗞️ Your Daily AI Update",
         html: emailHtml,
