@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${githubToken}`,
+          "Authorization": `token ${githubToken}`,
           "Accept": "application/vnd.github.v3+json",
           "Content-Type": "application/json",
           "User-Agent": "Vercel-AI-Hub"
