@@ -62,8 +62,8 @@ const dummyPosts: AIPost[] = [
 async function getPosts(): Promise<AIPost[]> {
   try {
     const postsSnapshot = await db.collection("posts")
-      .orderBy("importance_score", "desc")
-      .limit(20)
+      .orderBy("published_at", "desc")
+      .limit(60)
       .get();
       
     if (postsSnapshot.empty) return dummyPosts;

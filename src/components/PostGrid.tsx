@@ -422,7 +422,7 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
           })()}
 
           {/* Standard Posts Grid */}
-          <div className={`gap-8 space-y-6 ${columns === 1 ? "columns-1" : columns === 2 ? "columns-1 md:columns-2" : "columns-1 md:columns-2 lg:columns-3"}`}>
+          <div className={`grid gap-6 ${columns === 1 ? "grid-cols-1" : columns === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
             {gridPosts.map((post) => {
               const colorClass = categoryColors[post.category] || categoryColors["Default"];
               let formattedDate = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Today";
@@ -430,7 +430,7 @@ export default function PostGrid({ initialPosts }: { initialPosts: AIPost[] }) {
               const isSaved = savedIds.includes(post.id);
 
               return (
-                <div key={post.id} className="break-inside-avoid relative flex flex-col bg-transparent p-4 border-b border-slate-100/60 pb-6 rounded-none shadow-none space-y-2 hover:bg-white hover:rounded-xl hover:shadow-sm transition-all duration-200 group mb-4">
+                <div key={post.id} className="relative flex flex-col bg-transparent p-4 border-b border-slate-100/60 pb-6 rounded-none shadow-none space-y-2 hover:bg-white hover:rounded-xl hover:shadow-sm transition-all duration-200 group">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="flex items-center gap-1.5">
                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${colorClass}`}>
