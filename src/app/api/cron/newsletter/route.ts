@@ -64,31 +64,6 @@ export async function POST(request: Request) {
 
       let emailPosts = [...basePosts];
 
-      // 4. Translate on-the-fly if preferred language is Hebrew
-      if (language === "he" && ai) {
-        try {
-          const prompt = `
-          Translate the following list of AI posts into Hebrew for a newsletter.
-          Keep it highly readable, strictly respecting Right-To-Left sentence flows.
-          Maintain the exact fields layout structure.
-          
-          Input:
-          ${JSON.stringify(basePosts, null, 2)}
-          `;
-
-          const aiResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: { responseMimeType: "application/json" }
-          });
-
-          if (aiResponse.text) {
-            emailPosts = JSON.parse(aiResponse.text);
-          }
-        } catch (translationError) {
-          console.error(`Translation failed for ${email}, sending EN fallback:`, translationError);
-        }
-      }
 
       // 5. Render Template
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

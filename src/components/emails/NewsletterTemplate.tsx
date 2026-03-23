@@ -14,8 +14,10 @@ import * as React from "react";
 type AIPost = {
   id: string;
   original_title: string;
+  title_he?: string;
   original_url: string;
   ai_summary: string;
+  ai_summary_he?: string;
   category: string;
   source_name?: string;
 };
@@ -62,11 +64,11 @@ export const NewsletterTemplate = ({
                 </div>
                 
                 <Heading style={cardTitle}>
-                  {post.original_title}
+                  {isRTL ? (post.title_he || post.original_title) : post.original_title}
                 </Heading>
                 
                 <Text style={cardSummary}>
-                  {post.ai_summary}
+                  {isRTL ? (post.ai_summary_he || post.ai_summary) : post.ai_summary}
                 </Text>
 
                 <Link href={post.original_url} style={button}>
