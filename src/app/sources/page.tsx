@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/utils/firebase/client"; 
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, Timestamp } from "firebase/firestore";
-import { Trash2, Plus, Globe, Rss, Tv, Music, ToggleLeft, ToggleRight, ExternalLink, FileUp } from "lucide-react";
+import { Trash2, Plus, Globe, Rss, Tv, Music, ToggleLeft, ToggleRight, ExternalLink, FileUp, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ type SourceItem = {
   name: string;
   url: string;
   type: string;
-  status: "active" | "inactive";
+  is_active: boolean;
   created_at?: any;
 };
 
@@ -42,8 +42,12 @@ export default function SourcesPage() {
   const [importStatus, setImportStatus] = useState<{message: string; type: "success" | "error"} | null>(null);
 
   // Sorting State
-  const [sortBy, setSortBy] = useState<"name" | "type" | "status" | "created_at">("name");
+  const [sortBy, setSortBy] = useState<"name" | "type" | "is_active" | "created_at">("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Feed Validation State
+  const [validating, setValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{valid: boolean; message: string; suggestedUrl?: string} | null>(null);
 
   // New Source Form State
   const [newName, setNewName] = useState("");
@@ -78,29 +82,53 @@ export default function SourcesPage() {
     e.preventDefault();
     if (!newName || !newUrl) return;
 
+    // Validate feed URL first
+    setValidating(true);
+    setValidationResult(null);
     try {
+      const res = await fetch("/api/validate-feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: newUrl })
+      });
+      const validation = await res.json();
+
+      if (!validation.valid && !validation.suggestedUrl) {
+        setValidationResult({ valid: false, message: validation.message || "Invalid RSS feed URL. Please provide a valid RSS/Atom feed URL." });
+        setValidating(false);
+        return;
+      }
+
+      const finalUrl = validation.suggestedUrl || newUrl;
+      if (validation.suggestedUrl) {
+        setValidationResult({ valid: true, message: `Auto-corrected URL to: ${validation.suggestedUrl}`, suggestedUrl: validation.suggestedUrl });
+      }
+
       await addDoc(collection(db, "sources"), {
         name: newName,
-        url: newUrl,
+        url: finalUrl,
         type: newType,
-        status: "active",
+        is_active: true,
         created_at: Timestamp.now()
       });
 
       setNewName("");
       setNewUrl("");
       setNewType("blog");
+      setValidationResult(null);
       fetchSources();
     } catch (error) {
       console.error("Error adding source:", error);
+      setValidationResult({ valid: false, message: "Network error validating feed. Source was not added." });
+    } finally {
+      setValidating(false);
     }
   };
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
+  const handleToggleStatus = async (id: string, currentIsActive: boolean) => {
     try {
-      const newStatus = currentStatus === "inactive" ? "active" : "inactive";
       await updateDoc(doc(db, "sources", id), {
-        status: newStatus
+        is_active: !currentIsActive
       });
       fetchSources();
     } catch (error) {
@@ -119,7 +147,7 @@ export default function SourcesPage() {
     }
   };
 
-  const handleSort = (field: "name" | "type" | "status" | "created_at") => {
+  const handleSort = (field: "name" | "type" | "is_active" | "created_at") => {
     if (sortBy === field) {
       setSortDir(prev => prev === "asc" ? "desc" : "asc");
     } else {
@@ -154,7 +182,7 @@ export default function SourcesPage() {
               name: String(name),
               url: String(url),
               type: String(type).toLowerCase(),
-              status: "active",
+              is_active: true,
               created_at: Timestamp.now()
             });
             addedCount++;
@@ -250,12 +278,22 @@ export default function SourcesPage() {
               </select>
             </div>
           </div>
+          {validationResult && (
+            <div className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-bold border ${
+              validationResult.valid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
+            }`}>
+              {validationResult.valid ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+              {validationResult.message}
+            </div>
+          )}
           <div className="flex justify-end">
             <button 
               type="submit" 
-              className="px-4 py-1.5 bg-[#006c49] hover:bg-[#005f40] text-white font-bold rounded-lg text-sm transition-colors shadow-sm"
+              disabled={validating}
+              className="px-4 py-1.5 bg-[#006c49] hover:bg-[#005f40] text-white font-bold rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
             >
-              Add Source
+              {validating && <Loader2 className="w-4 h-4 animate-spin" />}
+              {validating ? "Validating Feed..." : "Add Source"}
             </button>
           </div>
         </form>
@@ -308,7 +346,7 @@ export default function SourcesPage() {
                 <th onClick={() => handleSort('name')} className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase cursor-pointer hover:text-[#006c49] select-none">Name{renderSortArrow('name')}</th>
                 <th onClick={() => handleSort('type')} className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase cursor-pointer hover:text-[#006c49] select-none">Type{renderSortArrow('type')}</th>
                 <th className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase">URL</th>
-                <th onClick={() => handleSort('status')} className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase cursor-pointer hover:text-[#006c49] select-none">Status{renderSortArrow('status')}</th>
+                <th onClick={() => handleSort('is_active')} className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase cursor-pointer hover:text-[#006c49] select-none">Status{renderSortArrow('is_active')}</th>
                 <th onClick={() => handleSort('created_at')} className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase cursor-pointer hover:text-[#006c49] select-none">Added{renderSortArrow('created_at')}</th>
                 <th className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase text-right">Actions</th>
               </tr>
@@ -316,7 +354,7 @@ export default function SourcesPage() {
             <tbody className="divide-y divide-slate-100">
               {sortedSources.map((source) => {
                 const Icon = typeIcons[source.type] || typeIcons.default;
-                const isActive = source.status !== "inactive";
+                const isActive = source.is_active !== false;
                 const dateStr = source.created_at?.toDate 
                   ? source.created_at.toDate().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
                   : "-";
@@ -349,7 +387,7 @@ export default function SourcesPage() {
                     <td className="px-5 py-3.5 text-right">
                        <div className="flex items-center justify-end gap-2">
                          <button 
-                           onClick={() => handleToggleStatus(source.id, source.status)}
+                           onClick={() => handleToggleStatus(source.id, source.is_active)}
                            className={`p-1 rounded hover:bg-slate-100 transition-colors ${isActive ? "text-emerald-600" : "text-slate-400"}`}
                            title={isActive ? "Disable Source" : "Enable Source"}
                          >

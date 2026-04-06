@@ -35,6 +35,9 @@ async function runSync() {
   const now = Date.now();
   const threeDaysAgo = now - (72 * 60 * 60 * 1000);
 
+  // Track which sources returned data
+  const sourcesWithData = new Map<string, string>(); // sourceId -> sourceName
+
   // 3. Scrape Feeds
   for (const doc of sourcesSnapshot.docs) {
     const source = doc.data();
@@ -46,6 +49,7 @@ async function runSync() {
 
     try {
       const feed = await parser.parseURL(sourceUrl);
+      let sourceItemCount = 0;
       
       for (const item of feed.items) {
         const pubDate = item.pubDate ? new Date(item.pubDate).getTime() : now;
@@ -59,7 +63,12 @@ async function runSync() {
             link: item.link || sourceUrl,
             pubDate: new Date(pubDate).toISOString()
           });
+          sourceItemCount++;
         }
+      }
+
+      if (sourceItemCount > 0) {
+        sourcesWithData.set(sourceId, sourceName);
       }
     } catch (scrapeError) {
       functions.logger.error(`Failed to scrape ${sourceName}:`, scrapeError);
@@ -67,15 +76,31 @@ async function runSync() {
   }
 
   if (scrapedItems.length === 0) {
-    functions.logger.info("No new items found in the last 24 hours.");
+    functions.logger.info("No new items found in the last 72 hours.");
     return { status: "success", message: "No new updates found to process." };
   }
 
-  functions.logger.info(`Processing ${scrapedItems.length} items with Gemini`);
+  functions.logger.info(`Processing ${scrapedItems.length} items from ${sourcesWithData.size} sources with Gemini`);
+
+  // ── Deduplication: Check existing posts ──
+  // Fetch all original_url values from recent posts to avoid re-ingesting
+  const existingUrlsSet = new Set<string>();
+  const recentPostsSnapshot = await db.collection("posts")
+    .orderBy("published_at", "desc")
+    .limit(500)
+    .get();
+  
+  for (const postDoc of recentPostsSnapshot.docs) {
+    const postData = postDoc.data();
+    if (postData.original_url) {
+      existingUrlsSet.add(postData.original_url);
+    }
+  }
+  functions.logger.info(`Found ${existingUrlsSet.size} existing post URLs for dedup`);
 
   // 4. Construct Prompt
   const prompt = `
-  You are an expert AI aggregator. Below are the latest updates from various tech sources fetched in the last 24 hours.
+  You are an expert AI aggregator. Below are the latest updates from various tech sources fetched in the last 72 hours.
   
   Your task is to:
   1. Read all updates.
@@ -109,7 +134,46 @@ async function runSync() {
   const responseText = aiResponse.text;
   if (!responseText) throw new Error("Empty response from Gemini.");
 
-  const updates = JSON.parse(responseText);
+  let updates: any[] = JSON.parse(responseText);
+
+  // ── Diversity Enforcement: At least 1 item per source that returned data ──
+  const representedSourceIds = new Set(updates.map((u: any) => u.source_id));
+  
+  for (const [sourceId, sourceName] of sourcesWithData) {
+    if (!representedSourceIds.has(sourceId)) {
+      // Find the best item from this source in scrapedItems (most recent)
+      const sourceItems = scrapedItems
+        .filter(item => item.source_id === sourceId)
+        .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+
+      if (sourceItems.length > 0) {
+        const best = sourceItems[0];
+        functions.logger.info(`Diversity enforcement: adding item from missing source "${sourceName}"`);
+        updates.push({
+          source_id: best.source_id,
+          source_name: best.source_name,
+          original_title: best.title,
+          original_url: best.link,
+          ai_summary: best.description.substring(0, 300) || `Latest update from ${sourceName}.`,
+          category: "General AI",
+          importance_score: 5
+        });
+      }
+    }
+  }
+
+  // ── Dedup filter: remove items whose original_url already exists in Firestore ──
+  const beforeDedup = updates.length;
+  updates = updates.filter((u: any) => !existingUrlsSet.has(u.original_url));
+  const dedupRemoved = beforeDedup - updates.length;
+  if (dedupRemoved > 0) {
+    functions.logger.info(`Dedup removed ${dedupRemoved} already-existing posts`);
+  }
+
+  if (updates.length === 0) {
+    functions.logger.info("All curated items were duplicates. Nothing to write.");
+    return { status: "success", message: "All items already exist. No new posts added." };
+  }
 
   // 5. Batch Write
   const batch = db.batch();
@@ -122,7 +186,8 @@ async function runSync() {
   }
 
   await batch.commit();
-  return { status: "success", message: `Curated and posted ${updates.length} items.` };
+  functions.logger.info(`Successfully posted ${updates.length} items (${dedupRemoved} duplicates skipped)`);
+  return { status: "success", message: `Curated and posted ${updates.length} items (${dedupRemoved} duplicates skipped).` };
 }
 
 // 1. Manual HTTP Trigger Webhook

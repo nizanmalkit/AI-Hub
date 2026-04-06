@@ -1,10 +1,46 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduledSync = exports.executeSync = void 0;
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+const functions = __importStar(require("firebase-functions"));
+const admin = __importStar(require("firebase-admin"));
 // @ts-ignore - Ignore missing types if they aren't fully populated inside the functions env workspace
-const rss_parser_1 = require("rss-parser");
+const rss_parser_1 = __importDefault(require("rss-parser"));
 const genai_1 = require("@google/genai");
 admin.initializeApp();
 const parser = new rss_parser_1.default();
@@ -28,7 +64,9 @@ async function runSync() {
     }
     const scrapedItems = [];
     const now = Date.now();
-    const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+    const threeDaysAgo = now - (72 * 60 * 60 * 1000);
+    // Track which sources returned data
+    const sourcesWithData = new Map(); // sourceId -> sourceName
     // 3. Scrape Feeds
     for (const doc of sourcesSnapshot.docs) {
         const source = doc.data();
@@ -38,9 +76,10 @@ async function runSync() {
         functions.logger.info(`Scraping Source: ${sourceName} (${sourceUrl})`);
         try {
             const feed = await parser.parseURL(sourceUrl);
+            let sourceItemCount = 0;
             for (const item of feed.items) {
                 const pubDate = item.pubDate ? new Date(item.pubDate).getTime() : now;
-                if (pubDate >= twentyFourHoursAgo) {
+                if (pubDate >= threeDaysAgo) {
                     scrapedItems.push({
                         source_id: sourceId,
                         source_name: sourceName,
@@ -49,7 +88,11 @@ async function runSync() {
                         link: item.link || sourceUrl,
                         pubDate: new Date(pubDate).toISOString()
                     });
+                    sourceItemCount++;
                 }
+            }
+            if (sourceItemCount > 0) {
+                sourcesWithData.set(sourceId, sourceName);
             }
         }
         catch (scrapeError) {
@@ -57,31 +100,50 @@ async function runSync() {
         }
     }
     if (scrapedItems.length === 0) {
-        functions.logger.info("No new items found in the last 24 hours.");
+        functions.logger.info("No new items found in the last 72 hours.");
         return { status: "success", message: "No new updates found to process." };
     }
-    functions.logger.info(`Processing ${scrapedItems.length} items with Gemini`);
+    functions.logger.info(`Processing ${scrapedItems.length} items from ${sourcesWithData.size} sources with Gemini`);
+    // ── Deduplication: Check existing posts ──
+    // Fetch all original_url values from recent posts to avoid re-ingesting
+    const existingUrlsSet = new Set();
+    const recentPostsSnapshot = await db.collection("posts")
+        .orderBy("published_at", "desc")
+        .limit(500)
+        .get();
+    for (const postDoc of recentPostsSnapshot.docs) {
+        const postData = postDoc.data();
+        if (postData.original_url) {
+            existingUrlsSet.add(postData.original_url);
+        }
+    }
+    functions.logger.info(`Found ${existingUrlsSet.size} existing post URLs for dedup`);
     // 4. Construct Prompt
     const prompt = `
-  You are an expert AI aggregator. Below are the latest updates from various tech sources fetched in the last 24 hours.
+  You are an expert AI aggregator. Below are the latest updates from various tech sources fetched in the last 72 hours.
   
   Your task is to:
   1. Read all updates.
   2. Group related items together.
-  3. Select at most the TOP 5 most significant developments.
-  4. For each selected item, write a 3-sentence summary highlighting why it matters.
-  5. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
-  6. Score importance (1 to 10).
+  3. Select the TOP 15 to 20 most significant developments.
+  4. Ensure you include at least one significant update from as many different sources as possible to maintain a diverse feed.
+  5. For each selected item, write a 3-sentence summary highlighting why it matters.
+  6. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
+  7. Score importance (1 to 10).
   
   Output MUST be a STRICTLY valid JSON array of objects with schema:
   {
     "source_id": "string",
+    "source_name": "string",
     "original_title": "string",
     "original_url": "string",
     "ai_summary": "string",
     "category": "string",
     "importance_score": number
-  }`;
+  }
+  
+  Here are the updates to process:
+  ${JSON.stringify(scrapedItems, null, 2)}`;
     const aiResponse = await ai.models.generateContent({
         model: "gemini-1.5-pro",
         contents: prompt,
@@ -90,7 +152,41 @@ async function runSync() {
     const responseText = aiResponse.text;
     if (!responseText)
         throw new Error("Empty response from Gemini.");
-    const updates = JSON.parse(responseText);
+    let updates = JSON.parse(responseText);
+    // ── Diversity Enforcement: At least 1 item per source that returned data ──
+    const representedSourceIds = new Set(updates.map((u) => u.source_id));
+    for (const [sourceId, sourceName] of sourcesWithData) {
+        if (!representedSourceIds.has(sourceId)) {
+            // Find the best item from this source in scrapedItems (most recent)
+            const sourceItems = scrapedItems
+                .filter(item => item.source_id === sourceId)
+                .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+            if (sourceItems.length > 0) {
+                const best = sourceItems[0];
+                functions.logger.info(`Diversity enforcement: adding item from missing source "${sourceName}"`);
+                updates.push({
+                    source_id: best.source_id,
+                    source_name: best.source_name,
+                    original_title: best.title,
+                    original_url: best.link,
+                    ai_summary: best.description.substring(0, 300) || `Latest update from ${sourceName}.`,
+                    category: "General AI",
+                    importance_score: 5
+                });
+            }
+        }
+    }
+    // ── Dedup filter: remove items whose original_url already exists in Firestore ──
+    const beforeDedup = updates.length;
+    updates = updates.filter((u) => !existingUrlsSet.has(u.original_url));
+    const dedupRemoved = beforeDedup - updates.length;
+    if (dedupRemoved > 0) {
+        functions.logger.info(`Dedup removed ${dedupRemoved} already-existing posts`);
+    }
+    if (updates.length === 0) {
+        functions.logger.info("All curated items were duplicates. Nothing to write.");
+        return { status: "success", message: "All items already exist. No new posts added." };
+    }
     // 5. Batch Write
     const batch = db.batch();
     for (const update of updates) {
@@ -98,7 +194,8 @@ async function runSync() {
         batch.set(postRef, Object.assign(Object.assign({}, update), { published_at: admin.firestore.FieldValue.serverTimestamp() }));
     }
     await batch.commit();
-    return { status: "success", message: `Curated and posted ${updates.length} items.` };
+    functions.logger.info(`Successfully posted ${updates.length} items (${dedupRemoved} duplicates skipped)`);
+    return { status: "success", message: `Curated and posted ${updates.length} items (${dedupRemoved} duplicates skipped).` };
 }
 // 1. Manual HTTP Trigger Webhook
 exports.executeSync = functions.https.onRequest(async (request, response) => {

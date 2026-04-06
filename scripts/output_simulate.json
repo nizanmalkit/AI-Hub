@@ -1,0 +1,91 @@
+[
+  {
+    "source_id": "simon",
+    "original_title": "Profiling Hacker News users based on their comments",
+    "title_he": "יצירת פרופילי משתמשים ב-Hacker News על בסיס תגובותיהם",
+    "original_url": "https://simonwillison.net/2026/Mar/21/profiling-hacker-news-users/#atom-entries",
+    "ai_summary": "Simon Willison demonstrated a method to generate detailed user profiles by feeding their last 1,000 Hacker News comments into an LLM like Claude Opus. The tool leverages the Algolia Hacker News API to easily fetch public comment history, resulting in surprisingly accurate and extensive personality and professional summaries. While effective for purposes like vetting debate partners, the ease of profiling also raises significant privacy concerns about extracting information from public data.",
+    "ai_summary_he": "סיימון וויליסון הציג שיטה ליצירת פרופילי משתמשים מפורטים על ידי הזנת 1,000 התגובות האחרונות שלהם ב-Hacker News למודל שפה גדול (LLM) כמו Claude Opus. הכלי משתמש ב-API של Algolia Hacker News כדי לשלוף בקלות היסטוריית תגובות ציבורית, ומייצר סיכומים מדויקים ומקיפים של אישיות ומאפיינים מקצועיים. למרות יעילותו למטרות כמו בחינת שותפים לדיון, קלות יצירת הפרופילים מעלה גם חששות פרטיות משמעותיים לגבי הפקת מידע מנתונים ציבוריים.",
+    "category": "LLM Updates",
+    "importance_score": 9,
+    "keywords": [
+      "LLM",
+      "user profiling",
+      "privacy",
+      "Hacker News",
+      "data extraction",
+      "ethics"
+    ]
+  },
+  {
+    "source_id": "theverge",
+    "original_title": "Gemini task automation is slow, clunky, and super impressive",
+    "title_he": "אוטומציית המשימות של ג'מיני איטית, מסורבלת ומרשימה ביותר",
+    "original_url": "https://www.theverge.com/tech/898282/gemini-task-automation-uber-doordash-hands-on",
+    "ai_summary": "Gemini's new task automation feature, tested on Pixel 10 Pro and Galaxy S26 Ultra, allows the AI to control apps for users, such as food delivery or rideshare services. Although currently limited and somewhat clunky, the capability is deemed impressive for its potential to streamline multi-step processes across various mobile applications. This marks a significant step towards more autonomous, agentic AI on consumer devices, enabling AI to perform complex actions directly within the user's phone environment.",
+    "ai_summary_he": "תכונת אוטומציית המשימות החדשה של ג'מיני, שנבדקה ב-Pixel 10 Pro וב-Galaxy S26 Ultra, מאפשרת לבינה המלאכותית לשלוט באפליקציות עבור המשתמשים, כגון שירותי משלוחי מזון או נסיעות שיתופיות. למרות שהיא מוגבלת כרגע ומעט מסורבלת, היכולת נחשבת מרשימה בשל הפוטנציאל שלה לייעל תהליכים מרובי שלבים באפליקציות מובייל שונות. זהו צעד משמעותי לקראת בינה מלאכותית אוטונומית יותר ומבוססת סוכנים במכשירי צריכה, המאפשרת לבינה המלאכותית לבצע פעולות מורכבות ישירות בסביבת הטלפון של המשתמש.",
+    "category": "LLM Updates",
+    "importance_score": 8,
+    "keywords": [
+      "Gemini",
+      "task automation",
+      "agentic AI",
+      "mobile AI",
+      "AI capabilities"
+    ]
+  },
+  {
+    "source_id": "theverge",
+    "original_title": "The gen AI Kool-Aid tastes like eugenics",
+    "title_he": "\"מיץ הקול-אייד\" של ה-AI הגנרטיבי בטעם של אאוגניקה",
+    "original_url": "https://www.theverge.com/entertainment/897923/ghost-in-the-machine-valerie-veatch-interview",
+    "ai_summary": "Director Valerie Veatch's documentary \"Ghost in the Machine\" explores the problematic and often overlooked ethical implications of generative AI, linking its underlying philosophies to historical eugenics. The film argues that the pursuit of \"perfect\" AI-generated outputs risks mirroring biases and harmful ideologies present in the training data and developer intentions. This critical perspective encourages a deeper examination of the societal impact and potential dangers embedded within the rapid advancement of generative artificial intelligence.",
+    "ai_summary_he": "הסרט התיעודי \"Ghost in the Machine\" של הבמאית ואלרי ויטש בוחן את ההשלכות האתיות הבעייתיות ולעתים קרובות מתעלמות של בינה מלאכותית גנרטיבית, ומקשר את הפילוסופיות הבסיסיות שלה לאאוגניקה היסטורית. הסרט טוען כי המרדף אחר תוצרים \"מושלמים\" שנוצרו על ידי AI מסכן שיקוף של הטיות ואידיאולוגיות מזיקות הקיימות בנתוני האימון ובכוונות המפתחים. נקודת מבט ביקורתית זו מעודדת בחינה מעמיקה יותר של ההשפעה החברתית והסכנות הפוטנציאליות הטמונות בהתקדמות המהירה של בינה מלאכותית גנרטיבית.",
+    "category": "General AI",
+    "importance_score": 9,
+    "keywords": [
+      "Generative AI",
+      "ethics",
+      "eugenics",
+      "societal impact",
+      "AI bias",
+      "documentary"
+    ]
+  },
+  {
+    "source_id": "tc",
+    "original_title": "Publisher pulls horror novel ‘Shy Girl’ over AI concerns",
+    "title_he": "הוצאה לאור מושכת רומן אימה 'נערה ביישנית' עקב חששות משימוש ב-AI",
+    "original_url": "https://techcrunch.com/2026/03/21/publisher-pulls-horror-novel-shy-girl-over-ai-concerns/",
+    "ai_summary": "Hachette Book Group has decided not to publish the horror novel \"Shy Girl\" due to serious concerns that its text was generated using artificial intelligence. This incident highlights the growing challenges publishers face in verifying the originality and human authorship of submitted works in the era of generative AI. The decision underscores the contentious debate around AI-generated content in creative industries and its potential impact on artists, copyright, and publishing standards.",
+    "ai_summary_he": "קבוצת ההוצאה לאור Hachette Book Group החליטה שלא לפרסם את רומן האימה \"Shy Girl\" עקב חששות רציניים שהטקסט שלו נוצר באמצעות בינה מלאכותית. אירוע זה מדגיש את האתגרים הגוברים הניצבים בפני מו\"לים באימות המקוריות והמחבר האנושי של יצירות שהוגשו בעידן ה-AI הגנרטיבי. ההחלטה מדגישה את הדיון השנוי במחלוקת סביב תוכן שנוצר על ידי AI בתעשיות היצירה ואת השפעתו הפוטנציאלית על אמנים, זכויות יוצרים ותקני הוצאה לאור.",
+    "category": "General AI",
+    "importance_score": 7,
+    "keywords": [
+      "AI-generated content",
+      "publishing",
+      "copyright",
+      "ethics",
+      "generative AI",
+      "authorship"
+    ]
+  },
+  {
+    "source_id": "tc",
+    "original_title": "Why Wall Street wasn’t won over by Nvidia’s big conference",
+    "title_he": "למה וול סטריט לא התרשמה מהכנס הגדול של אנבידיה",
+    "original_url": "https://techcrunch.com/2026/03/21/why-wall-street-wasnt-won-over-by-nvidias-big-conference/",
+    "ai_summary": "Despite significant announcements at Nvidia's latest conference, Wall Street investors remained largely unimpressed, leading to a notable drop in the company's stock value. This lukewarm reception indicates that the market may be scrutinizing AI hardware companies more closely, potentially looking beyond just growth projections to sustainable innovation and competitive advantages. The investor reaction suggests a shift in sentiment, where even leading AI players like Nvidia need to deliver more than anticipated to maintain bullish market confidence.",
+    "ai_summary_he": "למרות הכרזות משמעותיות בכנס האחרון של אנבידיה, משקיעי וול סטריט נותרו במידה רבה ללא התרשמות, מה שהוביל לירידה ניכרת בשווי מניות החברה. קבלה פושרת זו מצביעה על כך שהשוק בוחן מקרוב יותר חברות חומרת AI, ואולי מחפש מעבר לתחזיות צמיחה גם חדשנות בת קיימא ויתרונות תחרותיים. תגובת המשקיעים רומזת על שינוי בסנטימנט, כאשר אפילו שחקניות AI מובילות כמו אנבידיה צריכות לספק יותר מהצפוי כדי לשמור על אמון שוק אופטימי.",
+    "category": "General AI",
+    "importance_score": 7,
+    "keywords": [
+      "Nvidia",
+      "Wall Street",
+      "stock market",
+      "AI hardware",
+      "investor sentiment",
+      "market trends"
+    ]
+  }
+]
