@@ -33,7 +33,7 @@ async function runSync() {
 
   const scrapedItems: any[] = [];
   const now = Date.now();
-  const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+  const threeDaysAgo = now - (72 * 60 * 60 * 1000);
 
   // 3. Scrape Feeds
   for (const doc of sourcesSnapshot.docs) {
@@ -50,7 +50,7 @@ async function runSync() {
       for (const item of feed.items) {
         const pubDate = item.pubDate ? new Date(item.pubDate).getTime() : now;
         
-        if (pubDate >= twentyFourHoursAgo) {
+        if (pubDate >= threeDaysAgo) {
           scrapedItems.push({
             source_id: sourceId,
             source_name: sourceName,
@@ -80,20 +80,25 @@ async function runSync() {
   Your task is to:
   1. Read all updates.
   2. Group related items together.
-  3. Select at most the TOP 5 most significant developments.
-  4. For each selected item, write a 3-sentence summary highlighting why it matters.
-  5. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
-  6. Score importance (1 to 10).
+  3. Select the TOP 15 to 20 most significant developments.
+  4. Ensure you include at least one significant update from as many different sources as possible to maintain a diverse feed.
+  5. For each selected item, write a 3-sentence summary highlighting why it matters.
+  6. Categorize into: "LLM Updates", "Tutorials", "Policy", "Open Source", or "General AI".
+  7. Score importance (1 to 10).
   
   Output MUST be a STRICTLY valid JSON array of objects with schema:
   {
     "source_id": "string",
+    "source_name": "string",
     "original_title": "string",
     "original_url": "string",
     "ai_summary": "string",
     "category": "string",
     "importance_score": number
-  }`;
+  }
+  
+  Here are the updates to process:
+  ${JSON.stringify(scrapedItems, null, 2)}`;
 
   const aiResponse = await ai.models.generateContent({
     model: "gemini-1.5-pro",

@@ -35,13 +35,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: "success", message: "No active subscribers found." });
     }
 
-    // 2. Fetch Latest 5 Posts from Last 24 Hours
+    // 2. Fetch Latest 10 Posts from Last 24 Hours
     const now = Date.now();
     const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
     const postsSnap = await db.collection("posts")
       .orderBy("published_at", "desc")
       .where("published_at", ">=", twentyFourHoursAgo)
-      .limit(5)
+      .limit(10)
       .get();
 
     const basePosts = postsSnap.docs.map(doc => ({
