@@ -53,6 +53,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: "success", message: "No new posts to email today." });
     }
 
+    // 3. Enrich posts with source_name from the sources collection
+    const sourceIdsToLookup = [...new Set(
+      basePosts.filter(p => !p.source_name && p.source_id).map(p => p.source_id)
+    )] as string[];
+
+    if (sourceIdsToLookup.length > 0) {
+      // Firestore 'in' queries support up to 30 items
+      const sourcesSnap = await db.collection("sources")
+        .where("__name__", "in", sourceIdsToLookup.slice(0, 30))
+        .get();
+
+      const sourceNameMap: Record<string, string> = {};
+      sourcesSnap.docs.forEach(doc => {
+        sourceNameMap[doc.id] = doc.data().name || "Unknown Source";
+      });
+
+      basePosts.forEach(post => {
+        if (!post.source_name && post.source_id && sourceNameMap[post.source_id]) {
+          post.source_name = sourceNameMap[post.source_id];
+        }
+      });
+    }
+
     let successCount = 0;
 
     // 3. Loop Subscribers and Send
