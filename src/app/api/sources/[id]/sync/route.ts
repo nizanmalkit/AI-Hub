@@ -11,9 +11,9 @@ const parser = new Parser();
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const sourceId = params.id;
+  const { id: sourceId } = await params;
 
   try {
     console.log(`Manual sync triggered for source: ${sourceId}`);
