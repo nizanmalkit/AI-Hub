@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/utils/firebase/client"; 
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, Timestamp } from "firebase/firestore";
-import { Trash2, Plus, Globe, Rss, Tv, Music, ToggleLeft, ToggleRight, ExternalLink, FileUp, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, Globe, Rss, Tv, Music, ToggleLeft, ToggleRight, ExternalLink, FileUp, Loader2, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -48,6 +48,10 @@ export default function SourcesPage() {
   // Feed Validation State
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<{valid: boolean; message: string; suggestedUrl?: string} | null>(null);
+  
+  // Manual Sync State
+  const [syncingSourceId, setSyncingSourceId] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<{message: string; type: "success" | "error"} | null>(null);
 
   // New Source Form State
   const [newName, setNewName] = useState("");
@@ -147,6 +151,27 @@ export default function SourcesPage() {
     }
   };
 
+  const handleSyncSource = async (id: string) => {
+    setSyncingSourceId(id);
+    setSyncStatus(null);
+    try {
+      const res = await fetch(`/api/sources/${id}/sync`, { method: "POST" });
+      const result = await res.json();
+      if (result.status === "success") {
+        setSyncStatus({ message: result.message, type: "success" });
+        // Automatically hide success message after 5 seconds
+        setTimeout(() => setSyncStatus(null), 5000);
+      } else {
+        setSyncStatus({ message: result.message || "Sync failed", type: "error" });
+      }
+    } catch (error) {
+      console.error("Manual sync error:", error);
+      setSyncStatus({ message: "Network error during sync.", type: "error" });
+    } finally {
+      setSyncingSourceId(null);
+    }
+  };
+
   const handleSort = (field: "name" | "type" | "is_active" | "created_at") => {
     if (sortBy === field) {
       setSortDir(prev => prev === "asc" ? "desc" : "asc");
@@ -233,6 +258,16 @@ export default function SourcesPage() {
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Sources</h1>
         <p className="text-sm text-slate-500 mt-1">Add, disable, or remove absolute aggregator streams feeding your AI Engine.</p>
       </div>
+
+      {syncStatus && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 p-4 rounded-xl shadow-2xl border animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          syncStatus.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-red-50 text-red-800 border-red-200"
+        }`}>
+          {syncStatus.type === "success" ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+          <span className="text-sm font-bold">{syncStatus.message}</span>
+          <button onClick={() => setSyncStatus(null)} className="ml-4 text-slate-400 hover:text-slate-600">×</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Add New Source Form */}
@@ -385,22 +420,32 @@ export default function SourcesPage() {
                        {dateStr}
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                       <div className="flex items-center justify-end gap-2">
-                         <button 
-                           onClick={() => handleToggleStatus(source.id, source.is_active)}
-                           className={`p-1 rounded hover:bg-slate-100 transition-colors ${isActive ? "text-emerald-600" : "text-slate-400"}`}
-                           title={isActive ? "Disable Source" : "Enable Source"}
-                         >
-                           {isActive ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                         </button>
-                         <button 
-                           onClick={() => handleDeleteSource(source.id)}
-                           className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
-                           title="Delete Source"
-                         >
-                           <Trash2 className="w-4 h-4" />
-                         </button>
-                       </div>
+                        <div className="flex items-center justify-end gap-2">
+                           <button 
+                              onClick={() => handleSyncSource(source.id)}
+                              disabled={syncingSourceId === source.id || !source.is_active}
+                              className={`p-1 rounded hover:bg-slate-100 transition-colors ${
+                                syncingSourceId === source.id ? "text-[#006c49]" : "text-slate-400"
+                              } disabled:opacity-30`}
+                              title="Pull fresh data from this source"
+                            >
+                              <RefreshCw className={`w-4 h-4 ${syncingSourceId === source.id ? "animate-spin" : ""}`} />
+                            </button>
+                            <button 
+                              onClick={() => handleToggleStatus(source.id, source.is_active)}
+                              className={`p-1 rounded hover:bg-slate-100 transition-colors ${isActive ? "text-emerald-600" : "text-slate-400"}`}
+                              title={isActive ? "Disable Source" : "Enable Source"}
+                            >
+                              {isActive ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteSource(source.id)}
+                              className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                              title="Delete Source"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
                     </td>
                   </tr>
                 );
