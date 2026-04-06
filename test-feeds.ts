@@ -29,7 +29,7 @@ async function test() {
         return d >= threeDaysAgo;
       });
       console.log(`  New items (last 72h): ${newItems.length}`);
-    } catch (e) {
+    } catch (e: any) {
       console.log(`  Failed: ${e.message}`);
     }
   }
